@@ -14,6 +14,8 @@ class ShortenedUrl < ActiveRecord::Base
   validates :short_url, presence: true, uniqueness: true
   validates :user_id, presence: true
   validates :long_url, presence: true
+  validates_length_of :long_url, maximum: 1024
+  validates :post_by_user_within_time, numericality: {less_than: 5}
 
   belongs_to :submitter,
   foreign_key: :user_id,
@@ -66,4 +68,9 @@ class ShortenedUrl < ActiveRecord::Base
   def num_recent_uniques
     visits.select(:user_id).where("updated_at > ?", 10.minutes.ago).distinct.count
   end
+
+  def post_by_user_within_time
+    ShortenedUrl.where("updated_at > ? AND user_id = ?", 1.minutes.ago, user_id).count
+  end
+
 end
